@@ -11,55 +11,55 @@ import(
 
 func main() {
 
-	varwgsync.WaitGroup
+	var wg sync.WaitGroup
 
-	server, err:=net.Listen("tcp", "172.17.0.3:38527")
-	iferr!=nil{
+	server, err := net.Listen("tcp", "172.17.0.3:38527")
+	if err != nil{
 		log.Fatal(err)
 	}
 	log.Printf("bundet til %s", server.Addr().String())
 	wg.Add(1)
-	gofunc() {
-		deferwg.Done()
+	go func() {
+		defer wg.Done()
 		for{
 			log.Println("før server.Accept() kallet")
-			conn, err:=server.Accept()
-			iferr!=nil{
+			conn, err := server.Accept()
+			if err != nil{
 				return
 			}
-			gofunc(cnet.Conn) {
-				deferc.Close()
+			go func(c net.Conn) {
+				defer c.Close()
 				for{
-					buf:=make([]byte, 1024)
-					n, err:=c.Read(buf)
-					iferr!=nil{
-						iferr!=io.EOF{
+					buf := make([]byte, 1024)
+					n, err := c.Read(buf)
+					if err != nil{
+						if err != io.EOF{
 							log.Println(err)
 						}
 						return// fra for løkke
 					}
 
-					dekryptertMelding:=mycrypt.Krypter([]rune(string(buf[:n])), mycrypt.ALF_SEM03, len(mycrypt.ALF_SEM03)-4)
+					dekryptertMelding := mycrypt.Krypter([]rune(string(buf[:n])), mycrypt.ALF_SEM03, len(mycrypt.ALF_SEM03)-4)
 					log.Println("Dekrypter melding: ", string(dekryptertMelding))
-					switchmsg:=string(dekryptertMelding); msg{
-  				        case"ping":
+					switch msg := string(dekryptertMelding); msg{
+  				        case "ping":
 						//_, err = c.Write([]byte("pong"))
-						kryptertMelding:=mycrypt.Krypter([]rune(string("pong")), mycrypt.ALF_SEM03, 4)
+						kryptertMelding := mycrypt.Krypter([]rune(string("pong")), mycrypt.ALF_SEM03, 4)
 						log.Println("krypter melding: ", string(kryptertMelding))
-						_, err=conn.Write([]byte(string(kryptertMelding)))
-					case"Kjevik;SN39040;18.03.2022 01:50;6":
-						newString, err:=yr.CelsiusToFahrenheitLine("Kjevik;SN39040;18.03.2022 01:50;6")
-							iferr!=nil{
+						_, err = conn.Write([]byte(string(kryptertMelding)))
+					case "Kjevik;SN39040;18.03.2022 01:50;6":
+						newString, err := yr.CelsiusToFahrenheitLine("Kjevik;SN39040;18.03.2022 01:50;6")
+							if err != nil{
 							log.Fatal(err)
 							}
-							kryptertMelding:=mycrypt.Krypter([]rune(string(newString)), mycrypt.ALF_SEM03, 4)
-							_, err=conn.Write([]byte(string(kryptertMelding)))
+							kryptertMelding := mycrypt.Krypter([]rune(string(newString)), mycrypt.ALF_SEM03, 4)
+							_, err = conn.Write([]byte(string(kryptertMelding)))
 
 					default:
-						_, err=c.Write(buf[:n])
+						_, err = c.Write(buf[:n])
 					}
-					iferr!=nil{
-						iferr!=io.EOF{
+					if err != nil{
+						if err != io.EOF{
 							log.Println(err)
 						}
 						return// fra for løkke
